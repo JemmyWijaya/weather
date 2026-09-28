@@ -1,24 +1,89 @@
-'use client'
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+'use client';
+
+import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
 import { 
-  Search, MapPin, Wind, Droplets, Sun, Moon, 
+  Search, MapPin, Wind, Droplets, Sun, 
   ArrowLeft, Loader2, CloudRain, Thermometer, 
-  Eye, Sunrise, Sunset, CloudLightning, Snowflake
+  Eye, Sunrise, Sunset, CloudLightning, Snowflake, LucideIcon
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, BarChart, Bar
 } from 'recharts';
 
-
-// API Base URLs
+// --- API Base URLs ---
 const GEO_API = 'https://geocoding-api.open-meteo.com/v1/search';
 const WEATHER_API = 'https://api.open-meteo.com/v1/forecast';
 
+// --- Type Definitions ---
+export interface GeoLocation {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  country?: string;
+  admin1?: string;
+}
+
+export interface WeatherApiResponse {
+  current: {
+    temperature_2m: number;
+    relative_humidity_2m: number;
+    apparent_temperature: number;
+    is_day: number;
+    precipitation: number;
+    weather_code: number;
+    wind_speed_10m: number;
+  };
+  hourly: {
+    time: string[];
+    temperature_2m: number[];
+    weather_code: number[];
+  };
+  daily: {
+    time: string[];
+    weather_code: number[];
+    temperature_2m_max: number[];
+    temperature_2m_min: number[];
+    sunrise: string[];
+    sunset: string[];
+    precipitation_probability_max: number[];
+  };
+}
+
+export interface HourlyChartData {
+  time: string;
+  temp: number;
+}
+
+export interface DailyChartData {
+  day: string;
+  maxTemp: number;
+  minTemp: number;
+  precipProb: number;
+  code: number;
+}
+
+interface RouterState {
+  lat: number;
+  lon: number;
+  name: string;
+  country: string;
+  admin1: string;
+}
+
+interface RouterContextType {
+  route: {
+    path: string;
+    state: RouterState | null;
+  };
+  navigate: (path: string, state?: RouterState | null) => void;
+}
+
 // Weather code mapping to generic states
-const getWeatherState = (code) => {
+const getWeatherState = (code: number): { label: string; icon: LucideIcon; color: string } => {
   if (code === 0) return { label: 'Clear Sky', icon: Sun, color: 'text-yellow-400' };
-  if (code >= 1 && code <= 3) return { label: 'Cloudy', icon: Sun, color: 'text-slate-300' }; // simplified for daytime
+  if (code >= 1 && code <= 3) return { label: 'Cloudy', icon: Sun, color: 'text-slate-300' };
   if (code >= 45 && code <= 48) return { label: 'Fog', icon: Wind, color: 'text-slate-400' };
   if (code >= 51 && code <= 67) return { label: 'Rain', icon: CloudRain, color: 'text-blue-400' };
   if (code >= 71 && code <= 77) return { label: 'Snow', icon: Snowflake, color: 'text-indigo-200' };
@@ -28,27 +93,36 @@ const getWeatherState = (code) => {
 };
 
 // Formatter for hour strings
-const formatHour = (isoString) => {
+const formatHour = (isoString: string): string => {
   const date = new Date(isoString);
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
 // Formatter for day names
-const formatDay = (isoString) => {
+const formatDay = (isoString: string): string => {
   const date = new Date(isoString);
   return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
 };
 
+// A simple router context
+const RouterContext = createContext<RouterContextType | null>(null);
 
-// A simple router context to simulate Next.js routing in a single file
-const RouterContext = React.createContext();
+const useRouter = () => {
+  const context = useContext(RouterContext);
+  if (!context) throw new Error('useRouter must be used within a RouterContext.Provider');
+  return context;
+};
 
-const Layout = ({ children }) => {
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500/30">
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 blur-[120px] rounded-full"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 blur-[120px] rounded-full"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 blur-[120px] rounded-full" />
       </div>
       
       <header className="relative z-10 border-b border-white/10 bg-slate-950/50 backdrop-blur-xl sticky top-0">
@@ -61,26 +135,22 @@ const Layout = ({ children }) => {
               NextWeather
             </h1>
           </div>
-          <nav className="text-sm font-medium text-slate-400">
-            Recharts Integration
-          </nav>
         </div>
       </header>
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
+        {}
       </main>
     </div>
   );
 };
 
-
-const Home = () => {
-  const { navigate } = React.useContext(RouterContext);
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+const Home: React.FC = () => {
+  const { navigate } = useRouter();
+  const [query, setQuery] = useState<string>('');
+  const [results, setResults] = useState<GeoLocation[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Debounced search
   useEffect(() => {
@@ -94,9 +164,10 @@ const Home = () => {
       setError(null);
       try {
         const res = await fetch(`${GEO_API}?name=${encodeURIComponent(query)}&count=5&language=en&format=json`);
+        if (!res.ok) throw new Error('Failed to fetch data');
         const data = await res.json();
         setResults(data.results || []);
-      } catch (err) {
+      } catch {
         setError('Failed to fetch locations. Please try again.');
       } finally {
         setLoading(false);
@@ -107,7 +178,7 @@ const Home = () => {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const handleSelect = (loc) => {
+  const handleSelect = (loc: GeoLocation) => {
     navigate('/weather', {
       lat: loc.latitude,
       lon: loc.longitude,
@@ -121,7 +192,7 @@ const Home = () => {
     <div className="flex flex-col items-center justify-center min-h-[70vh] max-w-2xl mx-auto text-center space-y-8">
       <div className="space-y-4">
         <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-          Global Weather, <br/>
+          Global Weather, <br />
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
             Beautifully Visualized.
           </span>
@@ -169,19 +240,29 @@ const Home = () => {
         )}
 
         {error && (
-          <p className="mt-4 text-red-400 text-sm">{error}</p>
+          <p className="mt-4 text-red-400 text-sm">{}</p>
         )}
       </div>
     </div>
   );
 };
 
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name?: string;
+    value?: string | number;
+    color?: string;
+    unit?: string;
+  }>;
+  label?: string;
+}
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-slate-900/90 border border-slate-700 p-3 rounded-xl shadow-xl backdrop-blur-md">
-        <p className="text-slate-300 text-sm mb-1">{label}</p>
+        {label && <p className="text-slate-300 text-sm mb-1">{}</p>}
         {payload.map((entry, index) => (
           <p key={index} className="text-sm font-semibold" style={{ color: entry.color }}>
             {entry.name}: {entry.value} {entry.unit || ''}
@@ -193,15 +274,15 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-const HourlyChart = ({ data }) => {
+const HourlyChart: React.FC<{ data: HourlyChartData[] }> = ({ data }) => {
   return (
     <div className="h-72 w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
@@ -211,25 +292,25 @@ const HourlyChart = ({ data }) => {
             fontSize={12} 
             tickLine={false}
             axisLine={false}
-            tickMargin={10}
+            tickMargin={8} 
           />
           <YAxis 
             stroke="#94a3b8" 
             fontSize={12} 
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => `${value}°`}
+            tickFormatter={(value: number) => `${value}°`} 
           />
           <Tooltip content={<CustomTooltip />} />
           <Area 
             type="monotone" 
             dataKey="temp" 
-            name="Temperature"
+            name="Temperature" 
             stroke="#3b82f6" 
-            strokeWidth={3}
+            strokeWidth={2} 
             fillOpacity={1} 
             fill="url(#colorTemp)" 
-            unit="°C"
+            unit="°C" 
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -237,7 +318,7 @@ const HourlyChart = ({ data }) => {
   );
 };
 
-const DailyPrecipChart = ({ data }) => {
+const DailyPrecipChart: React.FC<{ data: DailyChartData[] }> = ({ data }) => {
   return (
     <div className="h-64 w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
@@ -249,22 +330,22 @@ const DailyPrecipChart = ({ data }) => {
             fontSize={12} 
             tickLine={false}
             axisLine={false}
-            tickMargin={10}
+            tickMargin={8} 
           />
           <YAxis 
             stroke="#94a3b8" 
             fontSize={12} 
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => `${value}%`}
+            tickFormatter={(value: number) => `${value}%`} 
           />
-          <Tooltip content={<CustomTooltip />} cursor={{fill: '#334155', opacity: 0.4}}/>
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: '#334155', opacity: 0.4 }} />
           <Bar 
             dataKey="precipProb" 
-            name="Precipitation Chance"
+            name="Precipitation Chance" 
             fill="#8b5cf6" 
-            radius={[4, 4, 0, 0]}
-            unit="%"
+            radius={[4, 4, 0, 0]} 
+            unit="%" 
           />
         </BarChart>
       </ResponsiveContainer>
@@ -272,26 +353,32 @@ const DailyPrecipChart = ({ data }) => {
   );
 };
 
+interface WeatherDashboardProps {
+  location: RouterState;
+}
 
-const WeatherDashboard = ({ location }) => {
-  const { navigate } = React.useContext(RouterContext);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const WeatherDashboard: React.FC<WeatherDashboardProps> = ({ location }) => {
+  const { navigate } = useRouter();
+  const [data, setData] = useState<WeatherApiResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchWeather = async () => {
       setLoading(true);
       try {
-        // Fetch Current, Hourly (24h), and Daily (7d)
         const url = `${WEATHER_API}?latitude=${location.lat}&longitude=${location.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
         
         const response = await fetch(url);
         if (!response.ok) throw new Error('Weather data unavailable');
-        const json = await response.json();
+        const json: WeatherApiResponse = await response.json();
         setData(json);
-      } catch (err) {
-        setError(err.message);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred');
+        }
       } finally {
         setLoading(false);
       }
@@ -314,7 +401,7 @@ const WeatherDashboard = ({ location }) => {
       <div className="text-center py-20 space-y-4">
         <p className="text-red-400">{error || 'Something went wrong'}</p>
         <button 
-          onClick={() => navigate('/', null)}
+          onClick={() => navigate('/')}
           className="px-4 py-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"
         >
           Go Back
@@ -329,15 +416,15 @@ const WeatherDashboard = ({ location }) => {
   const Icon = currState.icon;
 
   // Process next 24 hours for AreaChart
-  const currentHourIndex = data.hourly.time.findIndex(t => new Date(t) > new Date()) || 0;
-  const startIndex = Math.max(0, currentHourIndex - 1);
-  const hourlyData = data.hourly.time.slice(startIndex, startIndex + 24).map((time, i) => ({
+  const currentHourIndex = data.hourly.time.findIndex(t => new Date(t) > new Date());
+  const startIndex = Math.max(0, currentHourIndex === -1 ? 0 : currentHourIndex - 1);
+  const hourlyData: HourlyChartData[] = data.hourly.time.slice(startIndex, startIndex + 24).map((time, i) => ({
     time: formatHour(time),
     temp: Math.round(data.hourly.temperature_2m[startIndex + i])
   }));
 
   // Process 7 days for BarChart & List
-  const dailyData = data.daily.time.map((time, i) => ({
+  const dailyData: DailyChartData[] = data.daily.time.map((time, i) => ({
     day: i === 0 ? 'Today' : formatDay(time),
     maxTemp: Math.round(data.daily.temperature_2m_max[i]),
     minTemp: Math.round(data.daily.temperature_2m_min[i]),
@@ -347,11 +434,10 @@ const WeatherDashboard = ({ location }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
       {/* Navigation / Header */}
       <div className="flex items-center justify-between">
         <button 
-          onClick={() => navigate('/', null)}
+          onClick={() => navigate('/')}
           className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group px-3 py-1.5 rounded-lg hover:bg-white/5"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -369,7 +455,6 @@ const WeatherDashboard = ({ location }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
         {/* Main Current Weather Card (Span 8) */}
         <div className="lg:col-span-8 bg-slate-900/40 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-sm shadow-xl flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
@@ -430,7 +515,6 @@ const WeatherDashboard = ({ location }) => {
 
         {/* Sidebar (Span 4) */}
         <div className="lg:col-span-4 space-y-6 flex flex-col">
-          
           {/* Sun Cycle Card */}
           <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 backdrop-blur-sm shadow-xl">
             <h3 className="text-sm font-medium text-slate-400 mb-4">Sun & Moon</h3>
@@ -458,12 +542,11 @@ const WeatherDashboard = ({ location }) => {
 
           {/* Precipitation Chart */}
           <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 backdrop-blur-sm shadow-xl flex-1 flex flex-col">
-             <h3 className="text-sm font-medium text-slate-400 mb-2">7-Day Rain Probability</h3>
-             <div className="flex-1 min-h-[200px]">
-                <DailyPrecipChart data={dailyData} />
-             </div>
+            <h3 className="text-sm font-medium text-slate-400 mb-2">7-Day Rain Probability</h3>
+            <div className="flex-1 min-h-[200px]">
+              <DailyPrecipChart data={dailyData} />
+            </div>
           </div>
-
         </div>
       </div>
 
@@ -472,8 +555,9 @@ const WeatherDashboard = ({ location }) => {
         <h3 className="text-sm font-medium text-slate-400 mb-6">7-Day Forecast</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
           {dailyData.map((day, idx) => {
-            const DayIcon = getWeatherState(day.code).icon;
-            const dayColor = getWeatherState(day.code).color;
+            const state = getWeatherState(day.code);
+            const DayIcon = state.icon;
+            const dayColor = state.color;
             return (
               <div key={idx} className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800/50 flex flex-col items-center text-center hover:bg-slate-800/50 transition-colors">
                 <p className="text-sm font-medium text-slate-300 mb-3">{day.day}</p>
@@ -486,36 +570,37 @@ const WeatherDashboard = ({ location }) => {
                   <CloudRain className="w-3 h-3 text-blue-400/70" /> {day.precipProb}%
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
-
     </div>
   );
 };
 
-
 export default function App() {
-  // Simple internal router state
-  const [route, setRoute] = useState({ path: '/', state: null });
+  const [route, setRoute] = useState<{ path: string; state: RouterState | null }>({
+    path: '/',
+    state: null
+  });
 
-  // Navigation controller
-  const navigate = useCallback((path, state = null) => {
+  const navigate = useCallback((path: string, state: RouterState | null = null) => {
     setRoute({ path, state });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, []);
 
-  // Context value
   const contextValue = useMemo(() => ({
-    route, navigate
+    route,
+    navigate
   }), [route, navigate]);
 
   return (
     <RouterContext.Provider value={contextValue}>
       <Layout>
         {route.path === '/' && <Home />}
-        {route.path === '/weather' && <WeatherDashboard location={route.state} />}
+        {route.path === '/weather' && route.state && <WeatherDashboard location={route.state} />}
       </Layout>
     </RouterContext.Provider>
   );
