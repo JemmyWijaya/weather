@@ -158,7 +158,7 @@ export const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
           {!loading && !error && query.trim().length >= 2 && results.length === 0 && (
             <div className="text-center py-12 text-slate-400">
               <MapPin className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-              <p className="text-sm font-medium">{`No places found matching &ldquo;${query}&rdquo;`}</p>
+              <p className="text-sm font-medium">{`No places found matching "${query}"`}</p>
               <p className="text-xs text-slate-500 mt-1">{'Try checking the spelling or search another city'}</p>
             </div>
           )}
