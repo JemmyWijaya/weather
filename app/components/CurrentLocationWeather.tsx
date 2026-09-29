@@ -133,7 +133,9 @@ export const CurrentLocationWeather: React.FC = () => {
       }).catch(() => {
         setStatus('prompt');
       });
-    } 
+    }  else {
+      setStatus('prompt');
+    }
   }, [requestLocation]);
 
   const handleCardClick = () => {

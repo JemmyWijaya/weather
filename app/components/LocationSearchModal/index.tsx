@@ -34,6 +34,9 @@ export const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
       return () => clearTimeout(timer);
     } else {
       document.body.style.overflow = 'unset';
+      setQuery('');
+      setResults([]);
+      setError(null);
     }
     return () => {
       document.body.style.overflow = 'unset';
@@ -52,6 +55,8 @@ export const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
 
   useEffect(() => {
     if (query.trim().length < 2) {
+      setResults([]);
+      setLoading(false);
       return;
     }
 
