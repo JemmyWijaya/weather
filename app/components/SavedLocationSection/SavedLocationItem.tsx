@@ -71,7 +71,7 @@ export const SavedLocationItem: React.FC<SavedLocationItemProps> = ({item, onRem
               <Loader2 className="w-4 h-4 text-slate-500 animate-spin" />
             ) : item.temp !== undefined ? (
               <span className="text-2xl font-bold text-white tracking-tight">
-                {item.temp}{'°'}
+                {item.temp}{'°C'}
               </span>
             ) : (
               <span className="text-xs text-slate-500">{'--'}</span>
