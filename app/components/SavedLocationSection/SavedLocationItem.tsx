@@ -45,11 +45,11 @@ export const SavedLocationItem: React.FC<SavedLocationItemProps> = ({item, onRem
       <div
         key={item.id}
         onClick={handleNavigate}
-        className="group relative bg-slate-900/50 hover:bg-slate-900/80 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-3 sm:p-4 backdrop-blur-sm transition-all cursor-pointer flex flex-col justify-between h-32 sm:h-36 shadow-lg"
+        className="group relative bg-slate-900/50 hover:bg-slate-900/80 border border-slate-800/80 hover:border-slate-700 rounded-md p-3 sm:p-4 backdrop-blur-sm transition-all cursor-pointer flex flex-col justify-between h-32 sm:h-36 shadow-lg"
       >
         <button
           onClick={handleRemoveClick}
-          className="absolute top-2.5 right-2.5 p-1 rounded-lg text-slate-500 hover:text-red-400 hover:bg-slate-800/80 transition cursor-pointer"
+          className="absolute top-2.5 right-2.5 p-1 rounded-md text-slate-500 hover:text-red-400 hover:bg-slate-800/80 transition cursor-pointer"
           title="Remove location"
           aria-label="Remove location"
         >
@@ -65,7 +65,7 @@ export const SavedLocationItem: React.FC<SavedLocationItemProps> = ({item, onRem
           </p>
         </div>
 
-        <div className="flex items-end justify-between pt-2 border-t border-slate-800/50">
+        <div className="flex items-center justify-between pt-2 border-t border-slate-800/50">
           <div>
             {isLoadingWeather && item.temp === undefined ? (
               <Loader2 className="w-4 h-4 text-slate-500 animate-spin" />
@@ -79,7 +79,10 @@ export const SavedLocationItem: React.FC<SavedLocationItemProps> = ({item, onRem
           </div>
 
           {StateIcon && (
-            <StateIcon className={`w-6 h-6 ${stateConfig?.color || 'text-slate-400'}`} />
+            <div className="flex gap-2 items-center">
+              <StateIcon className={`w-5 h-5 ${stateConfig?.color || 'text-slate-400'}`} />
+              <span className="text-sm text-slate-400">{stateConfig.label}</span>
+            </div>
           )}
         </div>
       </div>

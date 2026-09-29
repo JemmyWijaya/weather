@@ -29,3 +29,86 @@ export const formatDay = (isoString: string): string => {
   const date = new Date(isoString);
   return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
 };
+
+export interface WeatherMoodTheme {
+  primaryGlow: string;  
+  secondaryGlow: string;  
+  ambientTint: string;    
+}
+
+export const getWeatherMoodTheme = (code: number | null | undefined, isDay = 1): WeatherMoodTheme => {
+  if (code === null || code === undefined) {
+    // Default
+    return {
+      primaryGlow: 'bg-blue-600/20',
+      secondaryGlow: 'bg-purple-600/20',
+      ambientTint: 'from-slate-950 via-slate-950 to-slate-900',
+    };
+  }
+
+  // Clear Sky
+  if (code === 0) {
+    return isDay
+      ? {
+          primaryGlow: 'bg-amber-400/25',
+          secondaryGlow: 'bg-yellow-200/20',
+          ambientTint: 'from-amber-950/20 via-slate-950 to-slate-950',
+        }
+      : {
+          primaryGlow: 'bg-indigo-500/20',
+          secondaryGlow: 'bg-blue-400/15',
+          ambientTint: 'from-indigo-950/30 via-slate-950 to-slate-950',
+        };
+  }
+
+  // Cloudy / Overcast 
+  if (code >= 1 && code <= 3) {
+    return {
+      primaryGlow: 'bg-slate-400/20',
+      secondaryGlow: 'bg-amber-300/15',
+      ambientTint: 'from-slate-900/60 via-slate-950 to-slate-950',
+    };
+  }
+
+  // Fog / Mist
+  if (code >= 45 && code <= 48) {
+    return {
+      primaryGlow: 'bg-zinc-400/20',
+      secondaryGlow: 'bg-teal-500/15',
+      ambientTint: 'from-zinc-900/40 via-slate-950 to-slate-950',
+    };
+  }
+
+  // Rain / Drizzle
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+    return {
+      primaryGlow: 'bg-cyan-500/25',
+      secondaryGlow: 'bg-blue-600/30',
+      ambientTint: 'from-cyan-950/25 via-blue-950/20 to-slate-950',
+    };
+  }
+
+  // Snow / Freezing Rain 
+  if (code >= 71 && code <= 77) {
+    return {
+      primaryGlow: 'bg-indigo-300/25',
+      secondaryGlow: 'bg-sky-200/20',
+      ambientTint: 'from-slate-900/60 via-indigo-950/20 to-slate-950',
+    };
+  }
+
+  // Thunderstorm 
+  if (code >= 95 && code <= 99) {
+    return {
+      primaryGlow: 'bg-purple-600/30',
+      secondaryGlow: 'bg-violet-400/25',
+      ambientTint: 'from-purple-950/30 via-slate-950 to-slate-950',
+    };
+  }
+
+  return {
+    primaryGlow: 'bg-blue-600/20',
+    secondaryGlow: 'bg-purple-600/20',
+    ambientTint: 'from-slate-950 via-slate-950 to-slate-900',
+  };
+};

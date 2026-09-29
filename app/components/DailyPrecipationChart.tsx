@@ -18,7 +18,7 @@ export const DailyPrecipitationChart: React.FC<DailyPrecipitationChartProps> = (
           <XAxis 
             dataKey="day" 
             stroke="#94a3b8" 
-            fontSize={12} 
+            fontSize={10} 
             tickLine={false}
             axisLine={false}
             tickMargin={10}

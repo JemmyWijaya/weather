@@ -34,9 +34,6 @@ export const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
       return () => clearTimeout(timer);
     } else {
       document.body.style.overflow = 'unset';
-      setQuery('');
-      setResults([]);
-      setError(null);
     }
     return () => {
       document.body.style.overflow = 'unset';
@@ -55,8 +52,6 @@ export const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
 
   useEffect(() => {
     if (query.trim().length < 2) {
-      setResults([]);
-      setLoading(false);
       return;
     }
 
@@ -109,17 +104,16 @@ export const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
       <div 
         role="dialog"
         aria-modal="true"
-        className="relative z-10 w-full sm:max-w-xl max-h-[85vh] sm:max-h-[620px] bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200"
+        className="relative z-10 w-full sm:max-w-xl max-h-[85vh] sm:max-h-[620px] bg-slate-900 border border-slate-800 rounded-t-md sm:rounded-md shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200"
       >
         <div className="p-4 sm:p-5 border-b border-slate-800/80 bg-slate-900/90">
           <div className="flex items-center justify-between pb-3 sm:pb-4">
             <h3 className="text-base sm:text-lg font-bold text-slate-100 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-blue-400" />
-              {'Find Location'}
+              {'Search Location'}
             </h3>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition"
+              className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-slate-800 transition cursor-pointer"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
@@ -133,7 +127,7 @@ export const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
             <input
               ref={inputRef}
               type="text"
-              className="w-full pl-11 pr-10 py-3 bg-slate-950/60 border border-slate-700/70 rounded-xl text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+              className="w-full pl-11 pr-10 py-3 bg-slate-950/60 border border-slate-700/70 rounded-md text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
               placeholder="Search city (e.g. Jakarta, London, Tokyo)..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -145,7 +139,7 @@ export const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
             ) : query ? (
               <button
                 onClick={() => setQuery('')}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -155,9 +149,9 @@ export const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
 
         <div className="flex-1 overflow-y-auto divide-y divide-slate-800/60 p-2 sm:p-3 min-h-[220px]">
           {error && (
-            <div className="flex items-center gap-2 p-4 text-red-400 text-sm bg-red-950/20 rounded-xl m-2">
+            <div className="flex items-center gap-2 p-4 text-red-400 text-sm bg-red-950/20 rounded-md m-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{}</span>
+              <span>{error}</span>
             </div>
           )}
 

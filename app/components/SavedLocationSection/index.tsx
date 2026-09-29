@@ -84,7 +84,7 @@ export const SavedLocationSection: React.FC<SavedLocationSectionProps> = ({ onOp
 
   if (!storageAvailable) {
     return (
-      <div className="w-full bg-slate-900/30 border border-slate-800 rounded-2xl p-4 text-left flex items-center gap-3 text-slate-400 text-xs">
+      <div className="w-full bg-slate-900/30 border border-slate-800 rounded-md p-4 text-left flex items-center gap-3 text-slate-400 text-xs">
         <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
         <span>{'Browser storage is disabled or blocked. Saved locations cannot be stored.'}</span>
       </div>
@@ -94,7 +94,7 @@ export const SavedLocationSection: React.FC<SavedLocationSectionProps> = ({ onOp
   return (
     <div className="w-full space-y-3 sm:space-y-4 text-left">
       {errorNotice && (
-        <div className="p-3 text-xs text-red-300 bg-red-950/20 border border-red-500/20 rounded-xl">
+        <div className="p-3 text-xs text-red-300 bg-red-950/20 border border-red-500/20 rounded-md">
           {errorNotice}
         </div>
       )}
@@ -110,7 +110,7 @@ export const SavedLocationSection: React.FC<SavedLocationSectionProps> = ({ onOp
         ))}
 
         {saved.length === 0 ? (
-          <div className="col-span-2 md:col-span-4 bg-slate-900/30 border border-dashed border-slate-800 rounded-2xl p-6 sm:p-8 text-center flex flex-col items-center justify-center space-y-3">
+          <div className="col-span-2 md:col-span-4 bg-slate-900/30 border border-dashed border-slate-800 rounded-md p-6 sm:p-8 text-center flex flex-col items-center justify-center space-y-3">
             <div className="p-3 bg-slate-800/50 rounded-full text-slate-400">
               <MapPin className="w-5 h-5" />
             </div>
@@ -122,7 +122,7 @@ export const SavedLocationSection: React.FC<SavedLocationSectionProps> = ({ onOp
             </div>
             <button
               onClick={onOpenSearch}
-              className="mt-1 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 cursor-pointer"
+              className="mt-1 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white text-xs font-semibold rounded-md transition flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>{'Add Location'}</span>
@@ -132,7 +132,7 @@ export const SavedLocationSection: React.FC<SavedLocationSectionProps> = ({ onOp
           saved.length < MAX_SAVED_LOCATIONS && (
             <button
               onClick={onOpenSearch}
-              className="border border-dashed border-slate-800 hover:border-slate-700 bg-slate-900/20 hover:bg-slate-900/40 rounded-2xl p-4 flex flex-col items-center justify-center text-slate-400 hover:text-slate-200 transition h-32 sm:h-36 group cursor-pointer"
+              className="border border-dashed border-slate-800 hover:border-slate-700 bg-slate-900/20 hover:bg-slate-900/40 rounded-md p-4 flex flex-col items-center justify-center text-slate-400 hover:text-slate-200 transition h-32 sm:h-36 group cursor-pointer"
             >
               <div className="p-2 rounded-full bg-slate-800/60 group-hover:bg-blue-600/20 group-hover:text-blue-400 transition mb-2">
                 <Plus className="w-4 h-4" />

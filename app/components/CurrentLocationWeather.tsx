@@ -7,6 +7,7 @@ import {
   Wind, Droplets, Thermometer, ChevronRight, RefreshCw 
 } from 'lucide-react';
 import { WEATHER_API, getWeatherState } from '../lib/weather-utils';
+import { useWeatherTheme } from '../context/WeatherThemeContext';
 
 interface CurrentWeatherData {
   temp: number;
@@ -25,6 +26,7 @@ export const CurrentLocationWeather: React.FC = () => {
   const [weather, setWeather] = useState<CurrentWeatherData | null>(null);
   const [status, setStatus] = useState<'idle' | 'prompt' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const { setWeatherMood } = useWeatherTheme();
 
   const fetchCityName = async (lat: number, lon: number): Promise<{ name: string; country: string }> => {
     try {
@@ -61,7 +63,8 @@ export const CurrentLocationWeather: React.FC = () => {
 
       const weatherJson = await weatherRes.json();
       const cur = weatherJson.current;
-
+      setWeatherMood(cur.weather_code, cur.is_day);
+      
       setWeather({
         temp: Math.round(cur.temperature_2m),
         feelsLike: Math.round(cur.apparent_temperature),
@@ -78,7 +81,7 @@ export const CurrentLocationWeather: React.FC = () => {
       setStatus('error');
       setErrorMessage(err instanceof Error ? err.message : 'Failed to fetch weather.');
     }
-  }, []);
+  }, [setWeatherMood]);
 
   const requestLocation = useCallback(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
@@ -130,9 +133,7 @@ export const CurrentLocationWeather: React.FC = () => {
       }).catch(() => {
         setStatus('prompt');
       });
-    } else {
-      setStatus('prompt');
-    }
+    } 
   }, [requestLocation]);
 
   const handleCardClick = () => {
@@ -148,9 +149,9 @@ export const CurrentLocationWeather: React.FC = () => {
 
   if (status === 'prompt') {
     return (
-      <div className="w-full bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 sm:p-5 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4 text-left transition-all">
+      <div className="w-full bg-slate-900/40 border border-slate-800/80 rounded-md p-4 sm:p-5 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4 text-left transition-all">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 shrink-0">
+          <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md text-blue-400 shrink-0">
             <Navigation className="w-5 h-5" />
           </div>
           <div>
@@ -160,7 +161,7 @@ export const CurrentLocationWeather: React.FC = () => {
         </div>
         <button
           onClick={requestLocation}
-          className="mt-1 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 cursor-pointer"
+          className="mt-1 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white text-xs font-semibold rounded-md transition flex items-center gap-2 cursor-pointer"
         >
           <span>{'Enable Location'}</span>
         </button>
@@ -170,7 +171,7 @@ export const CurrentLocationWeather: React.FC = () => {
 
   if (status === 'loading') {
     return (
-      <div className="w-full bg-slate-900/40 border border-slate-800 rounded-2xl p-6 backdrop-blur-md flex items-center justify-center gap-3">
+      <div className="w-full bg-slate-900/40 border border-slate-800 rounded-md p-6 backdrop-blur-md flex items-center justify-center gap-3">
         <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
         <span className="text-sm text-slate-400">{'Detecting local weather...'}</span>
       </div>
@@ -179,7 +180,7 @@ export const CurrentLocationWeather: React.FC = () => {
 
   if (status === 'error') {
     return (
-      <div className="w-full bg-red-950/20 border border-red-500/30 rounded-2xl p-4 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+      <div className="w-full bg-red-950/20 border border-red-500/30 rounded-md p-4 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
         <div className="flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
           <p className="text-xs sm:text-sm text-red-300">{errorMessage}</p>
@@ -202,7 +203,7 @@ export const CurrentLocationWeather: React.FC = () => {
     return (
       <div 
         onClick={handleCardClick}
-        className="w-full bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-4 sm:p-5 backdrop-blur-xl shadow-xl transition-all cursor-pointer group text-left relative overflow-hidden"
+        className="w-full bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800/80 hover:border-slate-700 rounded-md p-4 sm:p-5 backdrop-blur-xl shadow-xl transition-all cursor-pointer group text-left relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -225,7 +226,7 @@ export const CurrentLocationWeather: React.FC = () => {
           </div>
 
           <div className="flex flex-2 items-stretch gap-2 sm:gap-4 w-full sm:w-auto pt-3 sm:pt-0 border-t border-slate-800/60 sm:border-t-0">
-            <div className="flex flex-1 justify-between flex-col p-2 bg-slate-950/40 rounded-xl border border-slate-800/40 text-center">
+            <div className="flex flex-1 justify-between flex-col p-2 bg-slate-950/40 rounded-md border border-slate-800/40 text-center">
               <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px] uppercase">
                 <Thermometer className="w-3 h-3" />
                 <span>{'Feels'}</span>
@@ -233,7 +234,7 @@ export const CurrentLocationWeather: React.FC = () => {
               <p className="text-xs sm:text-sm font-semibold text-slate-200 mt-0.5 md:text-right">{weather.feelsLike}{'°'}</p>
             </div>
 
-            <div className="flex flex-1 justify-between flex-col p-2 bg-slate-950/40 rounded-xl border border-slate-800/40 text-center">
+            <div className="flex flex-1 justify-between flex-col p-2 bg-slate-950/40 rounded-md border border-slate-800/40 text-center">
               <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px] uppercase">
                 <Wind className="w-3 h-3" />
                 <span>{'Wind'}</span>
@@ -241,7 +242,7 @@ export const CurrentLocationWeather: React.FC = () => {
               <p className="text-xs sm:text-sm font-semibold text-slate-200 mt-0.5 md:text-right">{weather.windSpeed} <span className="text-[10px] text-slate-500 font-normal">{'km/h'}</span></p>
             </div>
 
-            <div className="flex flex-1 justify-between flex-col p-2 bg-slate-950/40 rounded-xl border border-slate-800/40 text-center">
+            <div className="flex flex-1 justify-between flex-col p-2 bg-slate-950/40 rounded-md border border-slate-800/40 text-center">
               <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px] uppercase">
                 <Droplets className="w-3 h-3" />
                 <span>{'Humid'}</span>

@@ -24,7 +24,7 @@ export const HourlyChart: React.FC<HourlyChartProps> = ({ data }) => {
           <XAxis 
             dataKey="time" 
             stroke="#94a3b8" 
-            fontSize={12} 
+            fontSize={10} 
             tickLine={false}
             axisLine={false}
             tickMargin={10} 

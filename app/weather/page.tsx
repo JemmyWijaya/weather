@@ -11,6 +11,7 @@ import { WeatherApiResponse, HourlyChartData, DailyChartData } from '../types/we
 import { WEATHER_API, getWeatherState, formatHour, formatDay } from '../lib/weather-utils';
 import { HourlyChart } from '../components/HourlyChart';
 import { DailyPrecipitationChart } from '../components/DailyPrecipationChart';
+import { useWeatherTheme } from '../context/WeatherThemeContext';
 
 function WeatherDashboardContent() {
   const router = useRouter();
@@ -25,6 +26,8 @@ function WeatherDashboardContent() {
   const [data, setData] = useState<WeatherApiResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { setWeatherMood } = useWeatherTheme();
 
   useEffect(() => {
     if (!lat || !lon) {
@@ -42,6 +45,8 @@ function WeatherDashboardContent() {
         if (!response.ok) throw new Error('Weather data unavailable');
         const json: WeatherApiResponse = await response.json();
         setData(json);
+        
+        setWeatherMood(json.current.weather_code, json.current.is_day);
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
@@ -54,7 +59,7 @@ function WeatherDashboardContent() {
     };
 
     fetchWeather();
-  }, [lat, lon]);
+  }, [lat, lon, setWeatherMood]);
 
   if (loading) {
     return (
@@ -71,7 +76,7 @@ function WeatherDashboardContent() {
         <p className="text-red-400">{error || 'Something went wrong'}</p>
         <Link 
           href="/" 
-          className="inline-block px-4 py-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"
+          className="inline-block px-4 py-2 bg-slate-800 rounded-md hover:bg-slate-700 transition"
         >
           {'Go Back'}
         </Link>
@@ -85,7 +90,7 @@ function WeatherDashboardContent() {
 
   const currentHourIndex = data.hourly.time.findIndex(t => new Date(t) > new Date());
   const startIndex = Math.max(0, currentHourIndex === -1 ? 0 : currentHourIndex - 1);
-  const hourlyData: HourlyChartData[] = data.hourly.time.slice(startIndex, startIndex + 24).map((time, i) => ({
+  const hourlyData: HourlyChartData[] = data.hourly.time.slice(startIndex, startIndex + 12).map((time, i) => ({
     time: formatHour(time),
     temp: Math.round(data.hourly.temperature_2m[startIndex + i])
   }));
@@ -103,7 +108,7 @@ function WeatherDashboardContent() {
       <div className="flex flex-col gap-5 items-start justify-between">
         <button 
           onClick={() => router.push('/')}
-          className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group rounded-lg cursor-pointer text-sm"
+          className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group rounded-md cursor-pointer text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>{'Back to Home'}</span>
@@ -122,8 +127,8 @@ function WeatherDashboardContent() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 bg-slate-900/40 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-sm shadow-xl flex flex-col justify-between">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="lg:col-span-8 bg-slate-900/40 border border-slate-800 rounded-md p-6 sm:p-8 backdrop-blur-sm shadow-xl flex flex-col justify-between">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
             <div>
               <p className="text-slate-400 font-medium mb-1">{'Current Weather'}</p>
               <div className="flex items-center gap-4">
@@ -131,7 +136,7 @@ function WeatherDashboardContent() {
                 <div>
                   <div className="flex items-start">
                     <span className="text-7xl font-bold tracking-tighter">{Math.round(current.temperature_2m)}</span>
-                    <span className="text-3xl font-semibold text-slate-400 mt-2">°C</span>
+                    <span className="text-3xl font-semibold text-slate-400 mt-2">{'°C'}</span>
                   </div>
                   <p className="text-lg font-medium text-slate-300">{currState.label}</p>
                 </div>
@@ -139,28 +144,28 @@ function WeatherDashboardContent() {
             </div>
             
             <div className="grid grid-cols-2 gap-4 w-full sm:w-auto">
-              <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800/50">
+              <div className="bg-slate-950/50 p-4 rounded-md border border-slate-800/50">
                 <div className="flex items-center gap-2 text-slate-400 mb-1">
                   <Wind className="w-4 h-4" />
                   <span className="text-xs font-medium uppercase tracking-wider">{'Wind'}</span>
                 </div>
                 <p className="text-xl font-semibold">{current.wind_speed_10m} <span className="text-sm text-slate-500">{'km/h'}</span></p>
               </div>
-              <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800/50">
+              <div className="bg-slate-950/50 p-4 rounded-md border border-slate-800/50">
                 <div className="flex items-center gap-2 text-slate-400 mb-1">
                   <Droplets className="w-4 h-4" />
                   <span className="text-xs font-medium uppercase tracking-wider">{'Humidity'}</span>
                 </div>
                 <p className="text-xl font-semibold">{current.relative_humidity_2m}<span className="text-sm text-slate-500">{'%'}</span></p>
               </div>
-              <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800/50">
+              <div className="bg-slate-950/50 p-4 rounded-md border border-slate-800/50">
                 <div className="flex items-center gap-2 text-slate-400 mb-1">
                   <Thermometer className="w-4 h-4" />
                   <span className="text-xs font-medium uppercase tracking-wider">{'Feels Like'}</span>
                 </div>
                 <p className="text-xl font-semibold">{Math.round(current.apparent_temperature)}<span className="text-sm text-slate-500">{'°'}</span></p>
               </div>
-              <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800/50">
+              <div className="bg-slate-950/50 p-4 rounded-md border border-slate-800/50">
                 <div className="flex items-center gap-2 text-slate-400 mb-1">
                   <CloudRain className="w-4 h-4" />
                   <span className="text-xs font-medium uppercase tracking-wider">{'Precipation'}</span>
@@ -172,17 +177,17 @@ function WeatherDashboardContent() {
 
           <div className="mt-8 pt-6 border-t border-slate-800/50">
             <h3 className="text-sm font-medium text-slate-400 mb-4 flex items-center gap-2">
-              <Eye className="w-4 h-4" /> {'24-Hour Temperature Trend'}
+              <Eye className="w-4 h-4" /> {'12-Hour Temperature Trend'}
             </h3>
             <HourlyChart data={hourlyData} />
           </div>
         </div>
 
         <div className="lg:col-span-4 space-y-6 flex flex-col">
-          <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 backdrop-blur-sm shadow-xl">
+          <div className="bg-slate-900/40 border border-slate-800 rounded-md p-6 backdrop-blur-sm shadow-xl">
             <h3 className="text-sm font-medium text-slate-400 mb-4">{'Sun & Moon'}</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-slate-950/50 rounded-2xl border border-slate-800/50">
+              <div className="flex items-center justify-between p-3 bg-slate-950/50 rounded-md border border-slate-800/50">
                 <div className="flex items-center gap-3">
                   <Sunrise className="w-8 h-8 text-yellow-500" />
                   <div>
@@ -191,7 +196,7 @@ function WeatherDashboardContent() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between p-3 bg-slate-950/50 rounded-2xl border border-slate-800/50">
+              <div className="flex items-center justify-between p-3 bg-slate-950/50 rounded-md border border-slate-800/50">
                 <div className="flex items-center gap-3">
                   <Sunset className="w-8 h-8 text-orange-500" />
                   <div>
@@ -203,7 +208,7 @@ function WeatherDashboardContent() {
             </div>
           </div>
 
-          <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 backdrop-blur-sm shadow-xl flex-1 flex flex-col">
+          <div className="bg-slate-900/40 border border-slate-800 rounded-md p-6 backdrop-blur-sm shadow-xl flex-1 flex flex-col">
             <h3 className="text-sm font-medium text-slate-400 mb-2">{'7-Day Rain Probability'}</h3>
             <div className="flex-1 min-h-[200px]">
               <DailyPrecipitationChart data={dailyData}/>
@@ -212,22 +217,24 @@ function WeatherDashboardContent() {
         </div>
       </div>
 
-      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 backdrop-blur-sm shadow-xl">
+      <div className="bg-slate-900/40 border border-slate-800 rounded-md p-6 backdrop-blur-sm shadow-xl">
         <h3 className="text-sm font-medium text-slate-400 mb-6">{'7-Day Forecast'}</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4">
           {dailyData.map((day, idx) => {
             const state = getWeatherState(day.code);
             const DayIcon = state.icon;
             return (
-              <div key={idx} className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800/50 flex flex-col items-center text-center hover:bg-slate-800/50 transition-colors">
-                <p className="text-sm font-medium text-slate-300 mb-3">{day.day}</p>
-                <DayIcon className={`w-8 h-8 ${state.color} mb-3`} />
-                <div className="flex items-center gap-3 w-full justify-center">
-                  <span className="font-bold text-white">{day.maxTemp}°</span>
-                  <span className="text-sm font-medium text-slate-500">{day.minTemp}°</span>
+              <div key={idx} className="bg-slate-950/50 p-4 rounded-md border border-slate-800/50 flex flex-col  transition-colors">
+                <p className="text-sm font-medium text-slate-300 mb-4">{day.day}</p>
+                <div className="flex gap-2 items-center mb-2">
+                  <DayIcon className={`w-6 h-6 ${state.color}`} />
+                  <span className="text-sm">{state.label}</span>
                 </div>
-                <div className="mt-3 text-xs text-slate-500 flex items-center gap-1">
-                  <CloudRain className="w-3 h-3 text-blue-400/70" /> {day.precipProb}%
+                <div className="grid grid-cols-[auto_1fr] items-center gap-1 gap-x-5 w-full">
+                  <span className="text-xs text-slate-400">{'Hi'}</span>
+                  <span className="text-xs text-slate-400">{'Low'}</span>
+                  <span className="font-bold text-white">{day.maxTemp}{'°'}</span>
+                  <span className="text-sm font-medium text-slate-400">{day.minTemp}{'°'}</span>
                 </div>
               </div>
             );
