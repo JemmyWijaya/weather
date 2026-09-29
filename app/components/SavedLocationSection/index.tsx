@@ -110,7 +110,7 @@ export const SavedLocationSection: React.FC<SavedLocationSectionProps> = ({ onOp
         ))}
 
         {saved.length === 0 ? (
-          <div className="col-span-2 md:col-span-4 bg-slate-900/30 border border-dashed border-slate-800 rounded-md p-6 sm:p-8 text-center flex flex-col items-center justify-center space-y-3">
+          <div className="col-span-2 md:col-span-4 bg-slate-900/30 border border-dashed border-slate-800 rounded-md p-4 text-center flex flex-col items-center justify-center space-y-3">
             <div className="p-3 bg-slate-800/50 rounded-full text-slate-400">
               <MapPin className="w-5 h-5" />
             </div>
@@ -122,7 +122,7 @@ export const SavedLocationSection: React.FC<SavedLocationSectionProps> = ({ onOp
             </div>
             <button
               onClick={onOpenSearch}
-              className="mt-1 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white text-xs font-semibold rounded-md transition flex items-center gap-2 cursor-pointer"
+              className="mt-1 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white text-xs font-semibold rounded-md transition flex items-center gap-2 cursor-pointer md:w-auto text-center w-full justify-center"
             >
               <Plus className="w-4 h-4" />
               <span>{'Add Location'}</span>

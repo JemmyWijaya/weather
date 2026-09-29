@@ -45,7 +45,7 @@ export const SavedLocationItem: React.FC<SavedLocationItemProps> = ({item, onRem
       <div
         key={item.id}
         onClick={handleNavigate}
-        className="group relative bg-slate-900/50 hover:bg-slate-900/80 border border-slate-800/80 hover:border-slate-700 rounded-md p-3 sm:p-4 backdrop-blur-sm transition-all cursor-pointer flex flex-col justify-between h-32 sm:h-36 shadow-lg"
+        className="group relative bg-slate-900/50 hover:bg-slate-900/80 border border-slate-800/80 hover:border-slate-700 rounded-md p-4 backdrop-blur-sm transition-all cursor-pointer flex flex-col justify-between h-32 sm:h-36 shadow-lg"
       >
         <button
           onClick={handleRemoveClick}

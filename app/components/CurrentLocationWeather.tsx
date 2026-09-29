@@ -156,12 +156,12 @@ export const CurrentLocationWeather: React.FC = () => {
           </div>
           <div>
             <h4 className="text-sm font-semibold text-slate-200">{'Local Weather'}</h4>
-            <p className="text-xs text-slate-400">{'Enable location to view real-time conditions for your area'}</p>
+            <p className="text-xs text-slate-400">{'Enable location to view real-time conditions.'}</p>
           </div>
         </div>
         <button
           onClick={requestLocation}
-          className="mt-1 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white text-xs font-semibold rounded-md transition flex items-center gap-2 cursor-pointer"
+          className="mt-1 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white text-xs font-semibold rounded-md transition flex items-center gap-2 cursor-pointer md:w-auto text-center w-full justify-center"
         >
           <span>{'Enable Location'}</span>
         </button>

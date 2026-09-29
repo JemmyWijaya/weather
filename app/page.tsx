@@ -94,7 +94,7 @@ export default function HomePage() {
         <button
           type="button"
           onClick={openSearchToNavigate}
-          className="w-full pl-12 pr-4 py-3.5 sm:py-4 bg-slate-900/50 hover:bg-slate-900/70 border border-slate-700/50 hover:border-slate-600 rounded-md text-left text-base text-slate-400 hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-xl transition-all shadow-2xl relative group cursor-pointer"
+          className="w-full p-4 pl-12 sm:py-4 bg-slate-900/50 hover:bg-slate-900/70 border border-slate-700/50 hover:border-slate-600 rounded-md text-left text-base text-slate-400 hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-xl transition-all shadow-2xl relative group cursor-pointer"
         >
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-slate-400 group-hover:text-blue-400 transition-colors" />
